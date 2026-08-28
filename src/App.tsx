@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { renderSigmaSplit } from './features/compositing/sigmaSplit'
 
 type CameraStatus = 'idle' | 'starting' | 'ready' | 'denied' | 'unavailable' | 'error'
 type RenderStatus = 'empty' | 'capturing' | 'ready' | 'error'
@@ -32,36 +33,7 @@ function App() {
     if (!video || status !== 'ready' || video.videoWidth === 0) return
 
     setRenderStatus('capturing')
-    const canvas = document.createElement('canvas')
-    canvas.width = 1080
-    canvas.height = 1080
-    const context = canvas.getContext('2d')
-
-    if (!context) {
-      setRenderStatus('error')
-      return
-    }
-
-    const sourceRatio = video.videoWidth / video.videoHeight
-    const targetRatio = canvas.width / canvas.height
-    let sourceWidth = video.videoWidth
-    let sourceHeight = video.videoHeight
-    let sourceX = 0
-    let sourceY = 0
-
-    if (sourceRatio > targetRatio) {
-      sourceWidth = video.videoHeight * targetRatio
-      sourceX = (video.videoWidth - sourceWidth) / 2
-    } else {
-      sourceHeight = video.videoWidth / targetRatio
-      sourceY = (video.videoHeight - sourceHeight) / 2
-    }
-
-    context.drawImage(video, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, canvas.width, canvas.height)
-    context.fillStyle = 'rgba(11, 11, 15, 0.08)'
-    context.fillRect(0, 0, canvas.width, canvas.height)
-
-    canvas.toBlob((blob) => {
+    renderSigmaSplit(video).then((blob) => {
       if (!blob) {
         setRenderStatus('error')
         return
@@ -71,7 +43,7 @@ function App() {
       resultUrlRef.current = nextUrl
       setResultUrl(nextUrl)
       setRenderStatus('ready')
-    }, 'image/png')
+    })
   }, [status])
 
   const clearResult = useCallback(() => {
