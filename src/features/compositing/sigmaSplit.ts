@@ -1,4 +1,5 @@
 import type { FaceBounds } from '../face-detection/faceDetector'
+import { getTemplate } from '../templates/templates'
 
 const OUTPUT_SIZE = 1080
 
@@ -35,7 +36,8 @@ function drawText(context: CanvasRenderingContext2D, text: string, x: number, y:
   context.restore()
 }
 
-export function renderSigmaSplit(source: HTMLVideoElement, face?: FaceBounds | null): Promise<Blob | null> {
+export function renderSigmaSplit(source: HTMLVideoElement, face?: FaceBounds | null, templateId = 'sigma_split_01'): Promise<Blob | null> {
+  const template = getTemplate(templateId)
   const canvas = document.createElement('canvas')
   canvas.width = OUTPUT_SIZE
   canvas.height = OUTPUT_SIZE
@@ -63,13 +65,13 @@ export function renderSigmaSplit(source: HTMLVideoElement, face?: FaceBounds | n
   context.fillStyle = photoGradient
   context.fillRect(0, 0, leftWidth, OUTPUT_SIZE)
 
-  context.fillStyle = '#15151D'
+  context.fillStyle = template.id === 'reaction_card_01' ? '#171122' : '#15151D'
   context.fillRect(leftWidth, 0, OUTPUT_SIZE - leftWidth, OUTPUT_SIZE)
 
   const panelGradient = context.createLinearGradient(leftWidth, 0, OUTPUT_SIZE, OUTPUT_SIZE)
-  panelGradient.addColorStop(0, 'rgba(0, 217, 255, 0.08)')
+  panelGradient.addColorStop(0, `${template.secondaryAccent}18`)
   panelGradient.addColorStop(0.5, 'rgba(21, 21, 29, 0)')
-  panelGradient.addColorStop(1, 'rgba(239, 35, 60, 0.14)')
+  panelGradient.addColorStop(1, `${template.accent}24`)
   context.fillStyle = panelGradient
   context.fillRect(leftWidth, 0, OUTPUT_SIZE - leftWidth, OUTPUT_SIZE)
 
@@ -88,23 +90,23 @@ export function renderSigmaSplit(source: HTMLVideoElement, face?: FaceBounds | n
   context.fill()
   context.restore()
 
-  context.strokeStyle = 'rgba(0, 217, 255, 0.55)'
+  context.strokeStyle = `${template.secondaryAccent}8C`
   context.lineWidth = 3
   context.beginPath()
   context.arc(centerX, centerY, 250, 0.15, Math.PI * 1.82)
   context.stroke()
-  context.strokeStyle = 'rgba(239, 35, 60, 0.7)'
+  context.strokeStyle = `${template.accent}B3`
   context.beginPath()
   context.arc(centerX, centerY, 220, Math.PI * 1.05, Math.PI * 1.74)
   context.stroke()
 
-  drawText(context, 'SIGMA', centerX, 705, 66, '#F5F5F5', 'center')
-  drawText(context, 'AURA', centerX, 785, 92, '#EF233C', 'center')
-  drawText(context, 'PHOTO MODE', centerX, 850, 18, '#00D9FF', 'center')
+  drawText(context, template.panelTitle, centerX, 705, template.id === 'aura_poster_01' ? 43 : 66, '#F5F5F5', 'center')
+  drawText(context, template.caption, centerX, 785, 78, template.accent, 'center')
+  drawText(context, 'PHOTO MODE', centerX, 850, 18, template.secondaryAccent, 'center')
 
   context.fillStyle = 'rgba(0, 0, 0, 0.28)'
   context.fillRect(0, 900, OUTPUT_SIZE, 180)
-  drawText(context, 'AURA FARMING', 54, 965, 54, '#F5F5F5')
+  drawText(context, template.name.toUpperCase(), 54, 965, 42, '#F5F5F5')
   drawText(context, 'CAPTURED IN REAL TIME', 56, 1020, 18, '#A1A1AA')
 
   context.strokeStyle = 'rgba(245, 245, 245, 0.18)'

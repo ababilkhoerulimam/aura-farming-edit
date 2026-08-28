@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { renderSigmaSplit } from './features/compositing/sigmaSplit'
 import { detectFace, type FaceBounds } from './features/face-detection/faceDetector'
+import { TemplateSelector } from './components/TemplateSelector'
+import { memeTemplates } from './features/templates/templates'
 
 type CameraStatus = 'idle' | 'starting' | 'ready' | 'denied' | 'unavailable' | 'error'
 type RenderStatus = 'empty' | 'capturing' | 'ready' | 'error'
@@ -23,6 +25,7 @@ function App() {
   const [resultUrl, setResultUrl] = useState<string | null>(null)
   const [faceBounds, setFaceBounds] = useState<FaceBounds | null>(null)
   const [detectionReady, setDetectionReady] = useState(false)
+  const [templateId, setTemplateId] = useState(memeTemplates[0].id)
 
   const stopCamera = useCallback(() => {
     streamRef.current?.getTracks().forEach((track) => track.stop())
@@ -36,7 +39,7 @@ function App() {
     if (!video || status !== 'ready' || video.videoWidth === 0) return
 
     setRenderStatus('capturing')
-    renderSigmaSplit(video, faceBounds).then((blob) => {
+    renderSigmaSplit(video, faceBounds, templateId).then((blob) => {
       if (!blob) {
         setRenderStatus('error')
         return
@@ -47,7 +50,7 @@ function App() {
       setResultUrl(nextUrl)
       setRenderStatus('ready')
     })
-  }, [faceBounds, status])
+  }, [faceBounds, status, templateId])
 
   const clearResult = useCallback(() => {
     if (resultUrlRef.current) URL.revokeObjectURL(resultUrlRef.current)
@@ -130,10 +133,7 @@ function App() {
           <p className="eyebrow">REAL-TIME PHOTO LAB</p>
           <h1>Aura Meme Generator</h1>
         </div>
-        <div className="template-pill">
-          <span className="pill-dot" />
-          Sigma Split <span className="chevron">⌄</span>
-        </div>
+        <TemplateSelector templates={memeTemplates} value={templateId} onChange={setTemplateId} />
       </header>
 
       <section className="workspace" aria-label="Camera and result workspace">
