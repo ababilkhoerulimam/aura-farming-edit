@@ -33,6 +33,9 @@ h2 { font-size: 18px; letter-spacing: -.02em; }
 .status-starting { color: #fde68a; }
 .status-denied, .status-error, .status-unavailable { color: #ff9ca9; }
 .camera-stage, .result-stage { position: relative; aspect-ratio: 1.35 / 1; margin: 0 12px; overflow: hidden; border: 1px solid #2b2b35; border-radius: 12px; background: #0d0d12; }
+.camera-stage { transition: background .18s ease; }
+.capture-flash::after { content: ''; position: absolute; inset: 0; background: #fff; animation: capture-flash .18s ease-out forwards; pointer-events: none; }
+@keyframes capture-flash { from { opacity: .9; } to { opacity: 0; } }
 .camera-video { display: block; width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); background: radial-gradient(circle, #23232d, #0c0c11 72%); }
 .camera-empty, .result-placeholder { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 9px; color: #9b9ba5; text-align: center; padding: 24px; }
 .camera-empty strong, .result-placeholder strong { color: #e8e8ee; font-size: 14px; }
@@ -63,4 +66,5 @@ h2 { font-size: 18px; letter-spacing: -.02em; }
   .workspace { grid-template-columns: 1fr; }
   .camera-stage, .result-stage { aspect-ratio: 1 / 1; }
   .app-footer { flex-direction: column; gap: 8px; }
+  .template-description { display: none; }
 }

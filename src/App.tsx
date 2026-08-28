@@ -26,6 +26,8 @@ function App() {
   const [faceBounds, setFaceBounds] = useState<FaceBounds | null>(null)
   const [detectionReady, setDetectionReady] = useState(false)
   const [templateId, setTemplateId] = useState(memeTemplates[0].id)
+  const [captureFlash, setCaptureFlash] = useState(false)
+  const [cameraError, setCameraError] = useState<string | null>(null)
 
   const stopCamera = useCallback(() => {
     streamRef.current?.getTracks().forEach((track) => track.stop())
@@ -39,6 +41,8 @@ function App() {
     if (!video || status !== 'ready' || video.videoWidth === 0) return
 
     setRenderStatus('capturing')
+    setCaptureFlash(true)
+    window.setTimeout(() => setCaptureFlash(false), 180)
     renderSigmaSplit(video, faceBounds, templateId).then((blob) => {
       if (!blob) {
         setRenderStatus('error')
@@ -49,7 +53,7 @@ function App() {
       resultUrlRef.current = nextUrl
       setResultUrl(nextUrl)
       setRenderStatus('ready')
-    })
+    }).catch(() => setRenderStatus('error'))
   }, [faceBounds, status, templateId])
 
   const clearResult = useCallback(() => {
@@ -74,6 +78,7 @@ function App() {
     }
 
     setStatus('starting')
+    setCameraError(null)
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: false,
@@ -90,7 +95,16 @@ function App() {
       setDetectionReady(false)
     } catch (error) {
       const name = error instanceof DOMException ? error.name : ''
-      setStatus(name === 'NotAllowedError' || name === 'SecurityError' ? 'denied' : 'error')
+      if (name === 'NotAllowedError' || name === 'SecurityError') {
+        setStatus('denied')
+        setCameraError('Camera access was blocked. Allow permission in browser settings, then try again.')
+      } else if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
+        setStatus('unavailable')
+        setCameraError('No camera device was found. Connect a webcam and try again.')
+      } else {
+        setStatus('error')
+        setCameraError('The camera could not start. Check that another app is not using it.')
+      }
     }
   }, [])
 
@@ -148,13 +162,13 @@ function App() {
             </span>
           </div>
 
-          <div className="camera-stage">
+          <div className={`camera-stage ${captureFlash ? 'capture-flash' : ''}`}>
             <video ref={videoRef} className="camera-video" playsInline muted aria-label="Live camera preview" />
             {status !== 'ready' && (
               <div className="camera-empty">
                 <div className="camera-icon">◉</div>
                 <strong>{status === 'starting' ? 'Starting camera' : 'Camera preview'}</strong>
-                <span>{status === 'denied' ? 'Allow camera access in your browser settings.' : 'Start the camera to begin.'}</span>
+                <span>{cameraError ?? (status === 'denied' ? 'Allow camera access in your browser settings.' : 'Start the camera to begin.')}</span>
               </div>
             )}
             {faceBounds && status === 'ready' && videoRef.current && (
@@ -204,8 +218,8 @@ function App() {
             ) : (
               <div className="result-placeholder">
                 <div className="placeholder-mark">{renderStatus === 'capturing' ? '…' : '✦'}</div>
-                <strong>{renderStatus === 'capturing' ? 'Generating preview' : 'Your edit will appear here'}</strong>
-                <span>{renderStatus === 'capturing' ? 'Rendering the captured frame.' : 'Capture a photo to generate the meme composite.'}</span>
+                <strong>{renderStatus === 'capturing' ? 'Generating preview' : renderStatus === 'error' ? 'Could not generate preview' : 'Your edit will appear here'}</strong>
+                <span>{renderStatus === 'capturing' ? 'Rendering the captured frame.' : renderStatus === 'error' ? 'Try capturing again.' : 'Capture a photo to generate the meme composite.'}</span>
               </div>
             )}
           </div>
