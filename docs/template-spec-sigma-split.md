@@ -1,5 +1,7 @@
 # Template specification — Sigma Split
 
+> ⚠️ **Deprecated direction:** The static Sigma Split image template is not part of the active Python desktop implementation. See the [Python desktop instant-edit plan](python-desktop-plan.md).
+
 _Spesifikasi template pertama untuk Aura Meme Generator._
 
 ---
@@ -87,4 +89,3 @@ Hasil setiap fixture dibandingkan secara visual untuk memastikan positioning tem
 ---
 
 _Status: Template spec awal · Menunggu asset character/reaction final._
-

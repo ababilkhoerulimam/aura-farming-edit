@@ -1,5 +1,7 @@
 # Product brief — Aura meme generator
 
+> ⚠️ **Deprecated direction:** See the active [Python desktop instant-edit plan](python-desktop-plan.md).
+
 _Dokumen keputusan Fase 0 untuk mengunci konsep, layout, output, dan batasan MVP._
 
 ---
@@ -168,4 +170,3 @@ Asset yang perlu tersedia untuk satu template pertama:
 ---
 
 _Status: Fase 0 siap dilanjutkan ke implementasi Fase 1._
-

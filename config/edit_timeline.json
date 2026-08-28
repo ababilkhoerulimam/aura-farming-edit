@@ -1,0 +1,60 @@
+{
+  "window_name": "MONITOR",
+  "rolling_buffer_seconds": 12,
+  "camera": {
+    "index": 0,
+    "width": 1280,
+    "height": 720,
+    "fps": 30,
+    "mirror": true
+  },
+  "edit": {
+    "pre_edit_sound": "assets/sounds/pre_edit.wav",
+    "post_edit_sound": "assets/sounds/post_edit.wav",
+    "layouts": {
+      "pip": [0.69, 0.05, 0.28, 0.40],
+      "wide": [0.34, 0.05, 0.62, 0.42],
+      "full": [0.08, 0.06, 0.84, 0.84]
+    },
+    "stages": [
+      {
+        "type": "live_replay",
+        "source_offset_seconds": 7.0,
+        "duration": 1.8,
+        "playback_rate": 0.75,
+        "layout": "pip"
+      },
+      {
+        "type": "live_replay",
+        "source_offset_seconds": 4.5,
+        "duration": 1.4,
+        "playback_rate": 0.55,
+        "layout": "pip",
+        "text": "WASTED",
+        "text_color": [40, 40, 235]
+      },
+      {
+        "type": "external_video",
+        "file": "assets/edits/reaction.mp4",
+        "fps": 30,
+        "duration": 1.8,
+        "layout": "pip"
+      },
+      {
+        "type": "live_replay",
+        "source_offset_seconds": 2.5,
+        "duration": 1.5,
+        "playback_rate": 0.45,
+        "layout": "wide",
+        "text": "MFS",
+        "text_color": [40, 40, 230]
+      },
+      {
+        "type": "montage",
+        "offsets": [8.0, 4.0, 1.0],
+        "duration": 2.4,
+        "layout": "wide"
+      }
+    ]
+  }
+}

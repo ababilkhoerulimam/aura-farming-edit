@@ -1,5 +1,7 @@
 # Real-Time Meme Photo Generator
 
+> ⚠️ **Deprecated direction:** This browser/photo-generator plan has been replaced by the [Python desktop instant-edit plan](python-desktop-plan.md).
+
 _Dokumen planning produk dan teknis untuk aplikasi capture foto real-time dengan hasil edit meme di panel samping._
 
 ---
