@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { renderSigmaSplit } from './features/compositing/sigmaSplit'
+import { detectFace, type FaceBounds } from './features/face-detection/faceDetector'
 
 type CameraStatus = 'idle' | 'starting' | 'ready' | 'denied' | 'unavailable' | 'error'
 type RenderStatus = 'empty' | 'capturing' | 'ready' | 'error'
@@ -20,6 +21,8 @@ function App() {
   const [status, setStatus] = useState<CameraStatus>('idle')
   const [renderStatus, setRenderStatus] = useState<RenderStatus>('empty')
   const [resultUrl, setResultUrl] = useState<string | null>(null)
+  const [faceBounds, setFaceBounds] = useState<FaceBounds | null>(null)
+  const [detectionReady, setDetectionReady] = useState(false)
 
   const stopCamera = useCallback(() => {
     streamRef.current?.getTracks().forEach((track) => track.stop())
@@ -33,7 +36,7 @@ function App() {
     if (!video || status !== 'ready' || video.videoWidth === 0) return
 
     setRenderStatus('capturing')
-    renderSigmaSplit(video).then((blob) => {
+    renderSigmaSplit(video, faceBounds).then((blob) => {
       if (!blob) {
         setRenderStatus('error')
         return
@@ -44,7 +47,7 @@ function App() {
       setResultUrl(nextUrl)
       setRenderStatus('ready')
     })
-  }, [status])
+  }, [faceBounds, status])
 
   const clearResult = useCallback(() => {
     if (resultUrlRef.current) URL.revokeObjectURL(resultUrlRef.current)
@@ -80,11 +83,40 @@ function App() {
         await videoRef.current.play()
       }
       setStatus('ready')
+      setFaceBounds(null)
+      setDetectionReady(false)
     } catch (error) {
       const name = error instanceof DOMException ? error.name : ''
       setStatus(name === 'NotAllowedError' || name === 'SecurityError' ? 'denied' : 'error')
     }
   }, [])
+
+  useEffect(() => {
+    if (status !== 'ready' || !videoRef.current) return
+    let cancelled = false
+    let timeoutId: number | undefined
+
+    const refreshDetection = async () => {
+      const video = videoRef.current
+      if (!video || cancelled) return
+      try {
+        const face = await detectFace(video, performance.now())
+        if (!cancelled) {
+          setFaceBounds(face)
+          setDetectionReady(true)
+        }
+      } catch {
+        if (!cancelled) setDetectionReady(false)
+      }
+      if (!cancelled) timeoutId = window.setTimeout(refreshDetection, 250)
+    }
+
+    void refreshDetection()
+    return () => {
+      cancelled = true
+      if (timeoutId) window.clearTimeout(timeoutId)
+    }
+  }, [status])
 
   useEffect(() => () => {
     stopCamera()
@@ -125,12 +157,24 @@ function App() {
                 <span>{status === 'denied' ? 'Allow camera access in your browser settings.' : 'Start the camera to begin.'}</span>
               </div>
             )}
-            <div className="face-guide" aria-hidden="true" />
+            {faceBounds && status === 'ready' && videoRef.current && (
+              <div
+                className="face-box"
+                style={{
+                  left: `${100 - ((faceBounds.x + faceBounds.width) / videoRef.current.videoWidth) * 100}%`,
+                  top: `${(faceBounds.y / videoRef.current.videoHeight) * 100}%`,
+                  width: `${(faceBounds.width / videoRef.current.videoWidth) * 100}%`,
+                  height: `${(faceBounds.height / videoRef.current.videoHeight) * 100}%`,
+                }}
+                aria-label="Detected face"
+              />
+            )}
+            <div className={`face-guide ${faceBounds ? 'face-guide-detected' : ''}`} aria-hidden="true" />
             <span className="stage-label">FACE GUIDE / PREVIEW</span>
           </div>
 
           <div className="card-footer">
-            <p className="helper-text">Position one face inside the guide.</p>
+            <p className="helper-text">{detectionReady ? 'Face detected · ready to capture.' : 'Position one face inside the guide.'}</p>
             <div className="button-group">
               {status === 'ready' && (
                 <button className="button button-primary" onClick={capturePhoto}>Capture photo</button>

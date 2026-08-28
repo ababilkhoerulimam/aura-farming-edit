@@ -1,6 +1,8 @@
+import type { FaceBounds } from '../face-detection/faceDetector'
+
 const OUTPUT_SIZE = 1080
 
-function drawCoverImage(context: CanvasRenderingContext2D, source: CanvasImageSource, x: number, y: number, width: number, height: number) {
+function drawCoverImage(context: CanvasRenderingContext2D, source: CanvasImageSource, x: number, y: number, width: number, height: number, focalPoint?: { x: number; y: number }) {
   const sourceWidth = source instanceof HTMLVideoElement ? source.videoWidth : source instanceof HTMLImageElement ? source.naturalWidth : 0
   const sourceHeight = source instanceof HTMLVideoElement ? source.videoHeight : source instanceof HTMLImageElement ? source.naturalHeight : 0
   if (!sourceWidth || !sourceHeight) return
@@ -14,10 +16,10 @@ function drawCoverImage(context: CanvasRenderingContext2D, source: CanvasImageSo
 
   if (sourceRatio > targetRatio) {
     cropWidth = sourceHeight * targetRatio
-    cropX = (sourceWidth - cropWidth) / 2
+    cropX = focalPoint ? Math.min(Math.max(focalPoint.x * sourceWidth - cropWidth / 2, 0), sourceWidth - cropWidth) : (sourceWidth - cropWidth) / 2
   } else {
     cropHeight = sourceWidth / targetRatio
-    cropY = (sourceHeight - cropHeight) / 2
+    cropY = focalPoint ? Math.min(Math.max(focalPoint.y * sourceHeight - cropHeight / 2, 0), sourceHeight - cropHeight) : (sourceHeight - cropHeight) / 2
   }
 
   context.drawImage(source, cropX, cropY, cropWidth, cropHeight, x, y, width, height)
@@ -33,7 +35,7 @@ function drawText(context: CanvasRenderingContext2D, text: string, x: number, y:
   context.restore()
 }
 
-export function renderSigmaSplit(source: HTMLVideoElement): Promise<Blob | null> {
+export function renderSigmaSplit(source: HTMLVideoElement, face?: FaceBounds | null): Promise<Blob | null> {
   const canvas = document.createElement('canvas')
   canvas.width = OUTPUT_SIZE
   canvas.height = OUTPUT_SIZE
@@ -44,11 +46,14 @@ export function renderSigmaSplit(source: HTMLVideoElement): Promise<Blob | null>
   context.fillRect(0, 0, OUTPUT_SIZE, OUTPUT_SIZE)
 
   const leftWidth = 590
-  drawCoverImage(context, source, 0, 0, leftWidth, OUTPUT_SIZE)
+  const focalPoint = face
+    ? { x: (face.x + face.width / 2) / source.videoWidth, y: (face.y + face.height / 2) / source.videoHeight }
+    : undefined
+  drawCoverImage(context, source, 0, 0, leftWidth, OUTPUT_SIZE, focalPoint)
 
   context.save()
   context.filter = 'grayscale(0.55) contrast(1.25) saturate(0.85)'
-  drawCoverImage(context, source, 0, 0, leftWidth, OUTPUT_SIZE)
+  drawCoverImage(context, source, 0, 0, leftWidth, OUTPUT_SIZE, focalPoint)
   context.restore()
 
   const photoGradient = context.createLinearGradient(0, 0, leftWidth, 0)

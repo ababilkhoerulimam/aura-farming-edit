@@ -35,6 +35,8 @@ h2 { font-size: 18px; letter-spacing: -.02em; }
 .camera-empty span, .result-placeholder span { max-width: 250px; color: #777782; font-size: 12px; line-height: 1.5; }
 .camera-icon, .placeholder-mark { display: grid; place-items: center; width: 48px; height: 48px; border: 1px solid #3e3e4a; border-radius: 14px; color: #ef233c; font-size: 24px; box-shadow: 0 0 30px rgba(239,35,60,.12); }
 .face-guide { position: absolute; left: 50%; top: 50%; width: 28%; height: 52%; transform: translate(-50%, -50%); border: 1px solid rgba(0, 217, 255, .68); border-radius: 44% 44% 48% 48%; box-shadow: 0 0 24px rgba(0,217,255,.12); opacity: .55; }
+.face-guide-detected { opacity: .18; }
+.face-box { position: absolute; border: 2px solid #4ade80; box-shadow: 0 0 18px rgba(74, 222, 128, .24); transform: scaleX(-1); pointer-events: none; }
 .stage-label { position: absolute; left: 14px; bottom: 12px; color: rgba(255,255,255,.46); font-size: 9px; letter-spacing: .16em; }
 .result-stage { background: repeating-linear-gradient(135deg, #14141b 0, #14141b 10px, #111117 10px, #111117 20px); }
 .result-image { display: block; width: 100%; height: 100%; object-fit: cover; }
